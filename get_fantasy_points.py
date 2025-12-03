@@ -22,6 +22,17 @@ def main():
         'view': 'player',
         'category': 'gamebygame',
     }
+    my_team_name = "Two Rooks Are Better Than One Knight"
+    my_players_names = [
+        "Abby Newhook",
+        "Marie-Philip Poulin",
+        "Sarah Fillier",
+        "Daryl Watts",
+        "Emily Clark",
+        "Hannah Miller",
+        "Jessie Eldridge",
+        "Abby Hustler",
+    ]
 
     players_json = get_api_response(api_base_url, players_params | general_params)
     api_player_list = deep_get(players_json, [0, 'sections', 0, 'data'], [])
@@ -36,7 +47,7 @@ def main():
         
         for team_row in teams_file:
             team_name = team_row[0]
-            players_array = team_row[1:-1]
+            players_array = team_row[1:]
 
             team_fantasy_points = 0
             if any('(G)' in player_info for player_info in players_array) and sum(['(D)' in player_info for player_info in players_array]) >= 2:
@@ -67,8 +78,14 @@ def main():
             fantasy_points_by_team_name[team_name] = team_fantasy_points
 
     ranked_team_list = list(sorted(fantasy_points_by_team_name.items(), key=lambda item: item[1], reverse=True))
-    for ranked_team in ranked_team_list:
-        print(f'{ranked_team[0]} - {ranked_team[1]}')
+    for ranked_team_index, ranked_team in enumerate(ranked_team_list):
+        # print my team points
+        if ranked_team[0] == my_team_name:
+            print(f'{ranked_team_index + 1}. {ranked_team[0]} - {ranked_team[1]}')
+    
+    # print my player points
+    for player_name in my_players_names:
+        print(f'{player_name}: {fantasy_points_by_player_name[player_name]}')
 
 
 def get_fantasy_points_by_game(game):
