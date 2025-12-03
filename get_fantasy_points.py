@@ -3,6 +3,7 @@ import json
 import csv
 
 def main():
+    api_base_url = 'https://lscluster.hockeytech.com/feed/index.php'
     general_params = {
         'season': 8,
         'key': '446521baf8c38984',
@@ -22,7 +23,7 @@ def main():
         'category': 'gamebygame',
     }
 
-    players_json = get_api_response(players_params | general_params)
+    players_json = get_api_response(api_base_url, players_params | general_params)
     api_player_list = deep_get(players_json, [0, 'sections', 0, 'data'], [])
     player_id_by_player_name = {deep_get(player, ['row', 'name'], ''): deep_get(player, ['row', 'player_id'], '') for player in api_player_list}
                     
@@ -55,7 +56,7 @@ def main():
                 fantasy_points_by_player_name[player_name] = 0
                 
                 player_id = player_id_by_player_name[player_name]
-                games_json = get_api_response({'player_id': player_id} | games_params | general_params)
+                games_json = get_api_response(api_base_url, {'player_id': player_id} | games_params | general_params)
                 games = deep_get(games_json, ['SiteKit', 'Player', 'games'], [])
                 for game in games:
                     fantasy_points = get_fantasy_points_by_game(game)
@@ -78,11 +79,11 @@ def get_fantasy_points_by_game(game):
     return goals + assists + plus_minus_pts
 
 
-def get_api_response(params):
+def get_api_response(api_base_url, params_dict):
     headers = {'Content-Type': 'application/json'}
-    params_str = '&'.join([f'{param[0]}={param[1]}' for param in params.items()])
+    params_str = '&'.join([f'{param[0]}={param[1]}' for param in params_dict.items()])
     
-    r = requests.get(f'https://lscluster.hockeytech.com/feed/index.php?{params_str}', headers=headers)
+    r = requests.get(f'{api_base_url}?{params_str}', headers=headers)
     if r.status_code != 200:
         raise Exception(f'request failed: {r}')
 

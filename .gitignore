@@ -1,0 +1,10 @@
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+
+# python compiled
+*.pyc
+
+# virtual environment
+venv/
