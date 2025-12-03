@@ -70,7 +70,10 @@ def main():
                 games_json = get_api_response(api_base_url, {'player_id': player_id} | games_params | general_params)
                 games = deep_get(games_json, ['SiteKit', 'Player', 'games'], [])
                 for game in games:
-                    fantasy_points = get_fantasy_points_by_game(game)
+                    if '(G)' in player_info:
+                        fantasy_points = get_goalie_fantasy_points_by_game(game)
+                    else:
+                        fantasy_points = get_skater_fantasy_points_by_game(game)
                     fantasy_points_by_player_name[player_name] += fantasy_points
                 
                 team_fantasy_points += fantasy_points_by_player_name[player_name]
@@ -88,12 +91,19 @@ def main():
         print(f'{player_name}: {fantasy_points_by_player_name[player_name]}')
 
 
-def get_fantasy_points_by_game(game):
+def get_skater_fantasy_points_by_game(game):
     goals = int(game.get('goals', 0))
     assists = int(game.get('assists', 0))
     plus_minus_pts = 5 if int(game.get('plusminus') or 0) > 0 else 0
     
     return goals + assists + plus_minus_pts
+
+
+def get_goalie_fantasy_points_by_game(game):
+    win_pts = 5 if int(game.get('win') or 0) == 1 else 0
+    shutout_pts = 5 if int(game.get('shutout') or 0) == 1 else 0
+    
+    return win_pts + shutout_pts
 
 
 def get_api_response(api_base_url, params_dict):
